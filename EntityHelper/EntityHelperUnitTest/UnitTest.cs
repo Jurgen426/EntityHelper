@@ -10,6 +10,7 @@ using System.ComponentModel;
 using FakeXrmEasy.Middleware.Crud;
 using FakeXrmEasy.CodeActivities;
 using ACCOUNT;
+using System.Linq;
 
 namespace EntityHelperTest
 {
@@ -66,9 +67,10 @@ namespace EntityHelperTest
 
             var result = context.ExecuteCodeActivity<Find>(inputs, null);
             Assert.IsTrue(
-                (int)result["_status"] == (int)ResultStatus.NotFound && (EntityReference)result["_account"] == null,
+                (int)result["_status"] == (int)ResultStatus.NotFound,
                 $"status: {(int)result["_status"]}\n"
             );
+            Assert.IsNull((EntityReference)result["_account"]);
         }
 
         [TestMethod]
@@ -83,8 +85,15 @@ namespace EntityHelperTest
 
             var result = context.ExecuteCodeActivity<Find>(inputs, null);
             Assert.IsTrue(
-                (int)result["_status"] == (int)ResultStatus.OneFound && (EntityReference)result["_account"] != null,
+                (int)result["_status"] == (int)ResultStatus.OneFound,
                 $"status: {(int)result["_status"]}\n"
+            );
+
+            Assert.IsNotNull((EntityReference)result["_account"]);
+
+            Assert.AreEqual(
+                eAccounts.Where(x => x["accountnumber"].ToString() == "222222222").First().ToEntityReference(), 
+                (EntityReference)result["_account"]
             );
         }
 
@@ -100,9 +109,11 @@ namespace EntityHelperTest
 
             var result = context.ExecuteCodeActivity<Find>(inputs, null);
             Assert.IsTrue(
-                (int)result["_status"] == (int)ResultStatus.ManyFound && (EntityReference)result["_account"] != null,
+                (int)result["_status"] == (int)ResultStatus.ManyFound,
                 $"status: {(int)result["_status"]}\n"
             );
+
+            Assert.IsNotNull((EntityReference)result["_account"]);
         }
     }
 }
